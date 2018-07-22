@@ -2,7 +2,11 @@ from Tkinter import *
 import os
 import glob
 
-os.system('clear')
+#function -----------------------------------------------------------------------------
+#System shutdown function
+def StopSys():
+  os.system('sudo shutdown -h now')
+  return
 
 class InfosDStarInLog:
 
@@ -30,56 +34,61 @@ class InfosDStarInLog:
         line = []
         for liste in self.allLine(logFile):
             if liste.find(Word)>0: line.append(liste)
+        line.reverse()
         return line
 
-    def DateMy(self):
-        line = ""
-        line = self.lastLine('Headers')
-        DateMy    = "Date:  " + line[8:10] + "/" + line[5:7] + "/" + line[0:4] +  " "  + line[10:16]
-        return DateMy
-    
     def My(self):
-        line = ""
-        line = self.lastLine('Headers')
-        My   = "My:    " + line[int(line.find("My:")+4):int(line.find("My:")+17)]
+        My = []
+        for line in InfosDStar.findWord("My:", "Header"):
+         My.append(line[int(line.find("My:")+4):int(line.find("My:")+11)] + " - " + line[8:10] + "/" + line[5:7] +  " "  + line[10:16] + " " + line[int(line.find("Rpt2:")+6):int(line.find("Rpt2:")+15)])
         return My
-
-    def Your(self):
-        line = ""
-        line = self.lastLine('Headers')
-        Your = "Your:  " + line[int(line.find("Your:")+6):int(line.find("Your:")+15)]
-        return Your
-
-    def RPT1(self):
-        line = ""
-        line = self.lastLine('Headers')
-        RPT1 = "Rpt1:  " + line[int(line.find("Rpt1:")+6):int(line.find("Rpt1:")+15)]
-        return RPT1
-
-    def RPT2(self):
-        line = ""
-        line = self.lastLine('Headers')
-        RPT2 = "Rpt2:  " + line[int(line.find("Rpt2:")+6):int(line.find("Rpt2:")+15)]
-        return RPT2
   
-    def reflector(self):
-        reflector = ""
-        line = self.findWord("established", "ircDDBGateway")
-        line = line[len(line)-1]
-        reflector = line[line.find("link to")+8:len(line)-12]
-        return reflector
+    def failed2connect(self):
+        failed2connect = []
+        for line in InfosDStar.findWord("failed to connect", "ircDDBGateway"):
+         failed2connect.append(line[3:int(line.find("failed to connect")-4)])
+        return failed2connect
     
+    def CannotFind(self):
+        CannotFind = []
+        for line in InfosDStar.findWord("Cannot find address for host", "ircDDBGateway"):
+         CannotFind.append(line[int(line.find("Cannot find address for host"))+30:len(line)-1])
+        return CannotFind
+    
+    def Starting_ircDDB(self):
+        Starting_ircDDB = []
+        for line in InfosDStar.findWord("Starting ircDDB Gateway daemon", "ircDDBGateway"):
+         Starting_ircDDB.append(line[3:22])
+        return Starting_ircDDB
+    
+    def reflector(self):
+        reflector = []
+        line = self.findWord("established", "ircDDBGateway")
+        if line:
+         reflector = line[line.find("link to")+8:len(line)-12]
+        return reflector
+
     def reflector_dt(self):
         reflector_dt = ""
         line = self.findWord("established", "ircDDBGateway")
         line = line[len(line)-1]
         reflector_dt = line[11:13] + "/" + line[8:10] + "/" + line[3:7] +  " "  + line[13:19]
         return reflector_dt
-    
 
 
 InfosDStar = InfosDStarInLog()
 
 
-for lt in InfosDStar.FILE("STARnet.log"):
-  print lt
+print InfosDStar.reflector()
+
+
+
+
+
+
+
+
+
+
+
+
