@@ -1,13 +1,10 @@
+import time, threading
+from time import sleep
 from Tkinter import *
+
+
 import os
 import glob
-
-#function -----------------------------------------------------------------------------
-#System shutdown function
-def StopSys():
-  os.system('sudo shutdown -h now')
-  return
-
 class InfosDStarInLog:
 
     def FILE(self, File):
@@ -16,13 +13,6 @@ class InfosDStarInLog:
         FILE = theFile.readlines()
         theFile.close()
         return FILE
-
-    def lastLine(self, logFile):
-        line = []
-        lastLine = ""
-        line = self.FILE(logFile)
-        lastLine = line[len(line)-1]
-        return lastLine        
 
     def allLine(self, logFile):
         line = []
@@ -36,59 +26,64 @@ class InfosDStarInLog:
             if liste.find(Word)>0: line.append(liste)
         line.reverse()
         return line
-
-    def My(self):
-        My = []
-        for line in InfosDStar.findWord("My:", "Header"):
-         My.append(line[int(line.find("My:")+4):int(line.find("My:")+11)] + " - " + line[8:10] + "/" + line[5:7] +  " "  + line[10:16] + " " + line[int(line.find("Rpt2:")+6):int(line.find("Rpt2:")+15)])
-        return My
   
     def failed2connect(self):
         failed2connect = []
-        for line in InfosDStar.findWord("failed to connect", "ircDDBGateway"):
+        for line in self.findWord("failed to connect", "ircDDBGateway"):
          failed2connect.append(line[3:int(line.find("failed to connect")-4)])
         return failed2connect
     
-    def CannotFind(self):
-        CannotFind = []
-        for line in InfosDStar.findWord("Cannot find address for host", "ircDDBGateway"):
-         CannotFind.append(line[int(line.find("Cannot find address for host"))+30:len(line)-1])
-        return CannotFind
-    
-    def Starting_ircDDB(self):
-        Starting_ircDDB = []
-        for line in InfosDStar.findWord("Starting ircDDB Gateway daemon", "ircDDBGateway"):
-         Starting_ircDDB.append(line[3:22])
-        return Starting_ircDDB
-    
-    def reflector(self):
-        reflector = []
-        line = self.findWord("established", "ircDDBGateway")
-        if line:
-         reflector = line[line.find("link to")+8:len(line)-12]
-        return reflector
 
-    def reflector_dt(self):
-        reflector_dt = ""
-        line = self.findWord("established", "ircDDBGateway")
-        line = line[len(line)-1]
-        reflector_dt = line[11:13] + "/" + line[8:10] + "/" + line[3:7] +  " "  + line[13:19]
-        return reflector_dt
+global listb
+
+class App(object):
+    def __init__(self, root):
+        def onselect(evt):
+            w = evt.widget
+            index = int(w.curselection()[0])
+            value = w.get(index)
+            detail.delete('1.0', END)
+            detail.insert(END,str(value*value))
+        lbl1 = Label(root, text="Result:", fg='black',
+                    font=("Helvetica", 16, "bold"))
+        lbl2 = Label(root, text="Detail:", fg='black',
+                        font=("Helvetica", 16, "bold"))
+        lbl1.grid(row=0, column=0,  sticky=W)
+        lbl2.grid(row=2, column=0,  sticky=W)
+
+        frm = Frame(root)
+        frm.grid(row=1, columnspan=2, sticky=N + S + W + E)
 
 
-InfosDStar = InfosDStarInLog()
+        scrollbar = Scrollbar(frm, orient=VERTICAL)
+        global listb
+        listb = Listbox(frm, yscrollcommand=scrollbar.set, width=50)
+        scrollbar.config(command=listb.yview)
+        scrollbar.pack(side=RIGHT, fill=Y)
+        listb.pack(fill=BOTH, expand=YES)
 
+        detail = Text(root, height=10, font=("Helvetica", 12))
+        detail.grid(row=6, columnspan=2, sticky=E + W + N)
+        listb.bind('<<ListboxSelect>>', onselect)
 
-print InfosDStar.reflector()
+InfosDStar = InfosDStarInLog() 
 
+def InfiniteProcess():
+    global listb
+    sleep(0.1)
+    for i in range(10000):
+        sleep(1)
+        vw = listb.yview()
+        listb.insert(0, InfosDStar.failed2connect()[0])
+        listb.yview_moveto(vw[-1])
+        #print(i)
 
+finish = False
+Process = threading.Thread(target=InfiniteProcess)
+Process.start()
 
-
-
-
-
-
-
-
-
-
+mainWindow = Tk()
+app = App(mainWindow)
+mainWindow.mainloop()
+finish = True
+Process.join()
