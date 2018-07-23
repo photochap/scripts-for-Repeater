@@ -38,52 +38,69 @@ global listb
 
 class App(object):
     def __init__(self, root):
-        def onselect(evt):
-            w = evt.widget
-            index = int(w.curselection()[0])
-            value = w.get(index)
-            detail.delete('1.0', END)
-            detail.insert(END,str(value*value))
-        lbl1 = Label(root, text="Result:", fg='black',
-                    font=("Helvetica", 16, "bold"))
-        lbl2 = Label(root, text="Detail:", fg='black',
-                        font=("Helvetica", 16, "bold"))
-        lbl1.grid(row=0, column=0,  sticky=W)
-        lbl2.grid(row=2, column=0,  sticky=W)
+        frm = Frame(root, borderwidth=2, relief=GROOVE)
 
-        frm = Frame(root)
-        frm.grid(row=1, columnspan=2, sticky=N + S + W + E)
-
-
+        frm.pack(side=LEFT)
+        # Ajout de labels
+        Label(frm, text="Frame 1").pack()
+        
+        
         scrollbar = Scrollbar(frm, orient=VERTICAL)
         global listb
-        listb = Listbox(frm, yscrollcommand=scrollbar.set, width=50)
+        listb = Listbox(frm, yscrollcommand=scrollbar.set)
+
         scrollbar.config(command=listb.yview)
         scrollbar.pack(side=RIGHT, fill=Y)
         listb.pack(fill=BOTH, expand=YES)
 
-        detail = Text(root, height=10, font=("Helvetica", 12))
-        detail.grid(row=6, columnspan=2, sticky=E + W + N)
-        listb.bind('<<ListboxSelect>>', onselect)
 
-InfosDStar = InfosDStarInLog() 
+
 
 def InfiniteProcess():
     global listb
     sleep(0.1)
-    for i in range(10000):
+    for i in range(2):
         sleep(1)
-        vw = listb.yview()
         listb.insert(0, InfosDStar.failed2connect()[0])
-        listb.yview_moveto(vw[-1])
-        #print(i)
+    listb.insert(0, "Stop")
+
+def callback():
+    global listb
+    listb.insert(0, "Stop")
+
+
+InfosDStar = InfosDStarInLog() 
+
+
 
 finish = False
+
+
+
 Process = threading.Thread(target=InfiniteProcess)
 Process.start()
 
-mainWindow = Tk()
-app = App(mainWindow)
-mainWindow.mainloop()
+fenetre = Tk()
+fenetre['bg']='blue'
+
+
+canvas = Canvas(fenetre, width=300, height=300, background='white')
+canvas.pack()
+
+label_failed_connect = Label(canvas, text="Failed to connect", justify='left')
+label_failed_connect_window = canvas.create_window(0, 0, anchor='nw', window=label_failed_connect)    
+
+label2 = Label(canvas, text="Hello World")
+label_failed_connect_window = canvas.create_window(0, 20, anchor='nw', window=label2)    
+
+
+app01 = App(canvas)
+app02 = App(canvas)
+
+
+
+fenetre.mainloop()
+
 finish = True
 Process.join()
+
